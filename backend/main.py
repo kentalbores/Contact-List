@@ -2,18 +2,19 @@ from flask import request, jsonify
 from config import app, db
 from models import Contact
 
+
 @app.route("/contacts", methods = ["GET"])
 def get_contacts():
     contacts = Contact.query.all()
     json_contacts = list(map(lambda x: x.to_json(), contacts))
     return jsonify({"contacts": json_contacts})
 
-@app.route("/create_contacts", methods=["POST"])
+
+@app.route("/create_contact", methods=["POST"])
 def create_contact():
-    data = request.json
-    first_name = data.get("firstName")
-    last_name = data.get("lastName")
-    email = data.get("email")
+    first_name = request.json.get("firstName")
+    last_name = request.json.get("lastName")
+    email = request.json.get("email")
 
     if not first_name or not last_name or not email:
         return {
@@ -27,7 +28,9 @@ def create_contact():
         db.session.commit()
     except Exception as e:
         return jsonify({"message": str(e)}), 400
+    
     return jsonify({"message": "User created!"}), 201
+
 
 @app.route("/update_contact/<int:user_id>", methods=["PATCH"])
 def update_contact(user_id):
@@ -45,6 +48,7 @@ def update_contact(user_id):
 
     return jsonify({"message": "User updated"}), 200
 
+
 @app.route("/delete_contact/<int:user_id>", methods = ["DELETE"])
 def delete_contact(user_id):
     contact = Contact.query.get(user_id)
@@ -57,8 +61,10 @@ def delete_contact(user_id):
     
     return jsonify({"message": "User deleted!"}), 200
 
+
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
 
     app.run(debug=True)
+    
